@@ -1,7 +1,19 @@
 import urllib.request
-url="https://api.stackexchange.com/2.2"
+import gzip
+import json
+
+api_url="https://api.stackexchange.com/2.2"
+
 def search(args):
-    params = urllib.parse.urlencode(args)
-    req = urllib.request.Request(url=url);
-    res = urllib.request.urlopen(req, params)
-    return res.read()
+    req = urllib.request.urlopen(
+        url("/search/advanced", args)
+    )
+    content = req.read()
+    if req.info().get('Content-Encoding') == 'gzip':
+        content = gzip.decompress(content)
+
+    return json.loads(content)
+
+def url(endpoint, params = {}):
+    params = urllib.parse.urlencode(params)
+    return api_url + endpoint + "?" + params
